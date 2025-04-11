@@ -19,3 +19,7 @@ Boomer outputs in CycloneDX — the industry-standard format for BOM files.
 ```
 docker run -it --rm -v $(pwd):/code whitespots/boomer:latest boomer scan /code -o /code/report.json
 ```
+
+# Plans
+
+- ASCII style BMW e38
