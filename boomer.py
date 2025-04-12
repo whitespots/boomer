@@ -9,9 +9,10 @@ from consts.file_extensions import LANGUAGE_EXTENSIONS
 from helpers.cyclonedx_converter import save_cyclonedx
 from helpers.log import logs
 from helpers.scanner import RepositoryScanner
+from metadata import __version__, __license__, __title__, __description__, __copyrights__, __bmw__
 
 
-@click.group(help="БYMEP - tool to analyze repository languages and dependencies")
+@click.group(help=f"{__title__} - {__description__}")
 def cli():
     """Repository Scanner command line interface."""
     pass
@@ -23,8 +24,9 @@ def cli():
               type=click.Path(),
               help='Path to output file')
 def scan(repo_path, output_path):
-    logs.info("БYMEP START ENGINE")
-    logs.info("(OO=[][]=OO)")
+    logs.info(f"{__title__} START ENGINE")
+    logs.info("WROOM WROOM")
+    logs.info(__bmw__)
 
     scanner = RepositoryScanner(repo_path)
 
@@ -56,9 +58,9 @@ def languages():
 
 @cli.command(help="Show version information")
 def version():
-    click.echo("БYMEP v0.0.1")
-    click.echo("Copyright (c) 2025 Whitespots")
-    click.echo("License: MIT")
+    click.echo(f"{__title__} v{__version__}")
+    click.echo(__copyrights__)
+    click.echo(__license__)
 
 
 if __name__ == "__main__":

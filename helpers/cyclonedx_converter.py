@@ -3,6 +3,8 @@ import json
 import os
 import uuid
 
+from metadata import __title__, __vendor__, __version__
+
 
 def save_cyclonedx(results, repo_path, output_path):
     bom = {
@@ -14,9 +16,9 @@ def save_cyclonedx(results, repo_path, output_path):
             "timestamp": datetime.datetime.now().isoformat(),
             "tools": [
                 {
-                    "vendor": "RepoScanner",
-                    "name": "repository-scanner",
-                    "version": "1.0.0"
+                    "vendor": __title__,
+                    "name": __vendor__,
+                    "version": __version__
                 }
             ]
         },
