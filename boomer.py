@@ -23,7 +23,9 @@ def cli():
 @click.option('-o', '--output', 'output_path',
               type=click.Path(),
               help='Path to output file')
-def scan(repo_path, output_path):
+@click.option('-d', '--direct', 'only_direct', type=click.BOOL, help='Provide with only direct dependencies')
+@click.option('--prefer-locks', is_flag=True, help='Prefer Python, JavaScript, Maven, and PHP lockfiles over package manifests')
+def scan(repo_path, output_path, only_direct=False, prefer_locks=False):
     logs.info(f"{__title__} START ENGINE")
     logs.info("WROOM WROOM")
     logs.info(__bmw__)
@@ -35,7 +37,7 @@ def scan(repo_path, output_path):
     logs.info(f"Found languages: {languages}")
 
     logs.info("Scanning dependencies...")
-    scanner.scan_dependencies()
+    scanner.scan_dependencies(only_direct=only_direct, prefer_locks=prefer_locks)
 
     logs.info("Convert to cyclonedx...")
     try:
