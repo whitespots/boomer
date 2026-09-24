@@ -1,0 +1,3 @@
+[requires]
+fmt/10.2.1
+catch2/3.5.2

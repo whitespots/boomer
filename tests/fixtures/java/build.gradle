@@ -1,0 +1,3 @@
+dependencies {
+  implementation 'org.example:gradle-lib:2.0.0'
+}

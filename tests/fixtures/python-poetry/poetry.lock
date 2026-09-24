@@ -1,0 +1,31 @@
+[[package]]
+name = "certifi"
+version = "2024.2.2"
+description = "Python package for providing Mozilla's CA Bundle."
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+
+[[package]]
+name = "requests"
+version = "2.32.3"
+description = "Python HTTP for Humans."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+
+[package.dependencies]
+certifi = ">=2017.4.17"
+
+[[package]]
+name = "pytest"
+version = "8.3.3"
+description = "pytest"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+
+[metadata]
+lock-version = "2.1"
+python-versions = "^3.11"
+content-hash = "fixture"

@@ -1,0 +1,12 @@
+[[package]]
+name = "lock-only-python-package"
+version = "1.2.3"
+description = "Lock-only fixture package."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+
+[metadata]
+lock-version = "2.1"
+python-versions = ">=3.8"
+content-hash = "fixture"
