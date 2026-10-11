@@ -1,0 +1,15 @@
+{
+  "groupId": "org.example",
+  "artifactId": "maven-lock-only-fixture",
+  "version": "1.0.0",
+  "lockFileVersion": 1,
+  "dependencies": [
+    {
+      "groupId": "org.example",
+      "artifactId": "lock-only-lib",
+      "version": "3.0.0",
+      "included": true,
+      "children": []
+    }
+  ]
+}

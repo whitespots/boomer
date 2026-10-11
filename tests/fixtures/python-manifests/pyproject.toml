@@ -1,0 +1,6 @@
+[tool.poetry.dependencies]
+python = "^3.11"
+poetry-lib = "^1.0.0"
+
+[project]
+dependencies = ["pep621-lib>=2.0.0"]

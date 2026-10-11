@@ -1,4 +1,5 @@
 import os
+import json
 import re
 import xml.etree.ElementTree as ET
 from typing import List, Tuple
@@ -9,12 +10,32 @@ from helpers.log import logs
 
 class JavaParser(Parser):
 
+    def __init__(self, repo_path: str, only_direct=False, prefer_locks=False):
+        super().__init__(repo_path, only_direct, prefer_locks)
+        self._dependency_relations = []
+
     def find_dependency_files(self) -> List[str]:
         dependency_files = []
         java_dep_files = DEPENDENCY_FILES['Java']
 
         for root, dirs, files in os.walk(self.repo_path):
+            files = set(files)
+            if self.prefer_locks:
+                maven_file = next(
+                    (name for name in ('lockfile.json', 'pom.xml') if name in files),
+                    None,
+                )
+            else:
+                maven_file = next(
+                    (name for name in ('pom.xml', 'lockfile.json') if name in files),
+                    None,
+                )
+            if maven_file:
+                dependency_files.append(os.path.join(root, maven_file))
+
             for file in files:
+                if file in ('pom.xml', 'lockfile.json'):
+                    continue
                 if file in java_dep_files or (file.endswith('.gradle') and file != '.gradle'):
                     dependency_files.append(os.path.join(root, file))
             if '.gradle' in java_dep_files and '.gradle' in dirs:
@@ -28,6 +49,8 @@ class JavaParser(Parser):
 
         if filename == "pom.xml":
             dependencies = self._parse_pom_xml(file_path)
+        elif filename == "lockfile.json":
+            dependencies = self._parse_maven_lock(file_path)
         elif filename.endswith('.gradle') or filename == '.gradle':
             dependencies = self._parse_gradle_file(file_path)
 
@@ -108,6 +131,48 @@ class JavaParser(Parser):
                     version = match.group(3)
                     library = f"{group_id}:{artifact_id}"
                     dependencies.append(('Java', library, version))
+
+        except Exception as e:
+            logs.error(f"Error parsing {file_path}: {e}")
+
+        return dependencies
+
+    def get_dependency_relations(self):
+        return self._dependency_relations
+
+    def _parse_maven_lock(self, file_path: str) -> List[Tuple[str, str, str]]:
+        dependencies = []
+
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+
+            seen_components = set()
+
+            def visit(node, parent=None):
+                if node.get('included') is False:
+                    return
+
+                group_id = node.get('groupId')
+                artifact_id = node.get('artifactId')
+                version = node.get('selectedVersion') or node.get('version')
+                if not group_id or not artifact_id or not version:
+                    return
+
+                component = ('Java', f"{group_id}:{artifact_id}", str(version))
+                if component not in seen_components:
+                    seen_components.add(component)
+                    dependencies.append(component)
+
+                self._dependency_relations.append((parent, component))
+                if self.only_direct:
+                    return
+
+                for child in node.get('children', []):
+                    visit(child, component)
+
+            for dependency in data.get('dependencies', []):
+                visit(dependency)
 
         except Exception as e:
             logs.error(f"Error parsing {file_path}: {e}")

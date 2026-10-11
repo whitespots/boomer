@@ -1,0 +1,4 @@
+requests==2.32.3
+flask>=3.0
+Celery[amqp,redis]==5.5.1
+My_Package.Name==1.2.3

@@ -1,0 +1,9 @@
+[package]
+name = "rust-fixture"
+version = "0.1.0"
+
+[dependencies]
+serde = "1.0.197"
+
+[dev-dependencies]
+anyhow = { version = "1.0.86" }

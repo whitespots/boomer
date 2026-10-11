@@ -8,15 +8,25 @@ from helpers.log import logs
 
 class PhpParser(Parser):
 
-    def find_dependency_files(self) -> List[str]:
+    def __init__(self, repo_path: str, only_direct=False, prefer_locks=False):
+        super().__init__(repo_path, only_direct, prefer_locks)
+        self._dependency_relations = []
 
+    def find_dependency_files(self) -> List[str]:
         dependency_files = []
-        php_dep_files = DEPENDENCY_FILES['PHP']
 
         for root, _, files in os.walk(self.repo_path):
-            for file in files:
-                if file in php_dep_files:
-                    dependency_files.append(os.path.join(root, file))
+            files = set(files)
+            if self.prefer_locks:
+                selected_file = 'composer.lock' if 'composer.lock' in files else None
+            else:
+                selected_file = next(
+                    (file for file in ('composer.json', 'composer.lock') if file in files),
+                    None,
+                )
+
+            if selected_file:
+                dependency_files.append(os.path.join(root, selected_file))
 
         return dependency_files
 
@@ -67,21 +77,27 @@ class PhpParser(Parser):
             with open(file_path, 'r') as file:
                 data = json.load(file)
 
-            if 'packages' in data:
-                for package in data['packages']:
-                    if 'name' in package and 'version' in package:
-                        name = package['name']
-                        version = package['version']
-                        dependencies.append(('PHP', name, version))
+            packages = data.get('packages', []) + data.get('packages-dev', [])
+            package_components = {
+                package['name']: ('PHP', package['name'], package['version'])
+                for package in packages
+                if 'name' in package and 'version' in package
+            }
+            dependencies.extend(package_components.values())
 
-            if 'packages-dev' in data:
-                for package in data['packages-dev']:
-                    if 'name' in package and 'version' in package:
-                        name = package['name']
-                        version = package['version']
-                        dependencies.append(('PHP', name, version))
+            for package in packages:
+                source = package_components.get(package.get('name'))
+                if not source:
+                    continue
+                for dependency_name in package.get('require', {}):
+                    target = package_components.get(dependency_name)
+                    if target:
+                        self._dependency_relations.append((source, target))
 
         except Exception as e:
             logs.error(f"Error parsing {file_path}: {e}")
 
         return dependencies
+
+    def get_dependency_relations(self):
+        return self._dependency_relations

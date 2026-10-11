@@ -1,0 +1,5 @@
+Global
+  GlobalSection(NuGetPackageImports) = postSolution
+    Microsoft.CSharp.4.7.0.targets = 0
+  EndGlobalSection
+EndGlobal

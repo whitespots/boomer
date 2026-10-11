@@ -13,6 +13,8 @@ class GoParser(Parser):
         go_dep_files = DEPENDENCY_FILES['Go']
 
         for root, _, files in os.walk(self.repo_path):
+            if "/.cache/" in root:
+                continue
             for file in files:
                 if file in go_dep_files:
                     dependency_files.append(os.path.join(root, file))
@@ -25,7 +27,7 @@ class GoParser(Parser):
 
         if filename == "go.mod":
             dependencies = self._parse_go_mod(file_path)
-        elif filename == "go.sum":
+        elif filename == "go.sum" and not self.only_direct:
             dependencies = self._parse_go_sum(file_path)
         elif filename in ["Gopkg.toml", "Gopkg.lock"]:
             dependencies = self._parse_gopkg(file_path)
@@ -39,21 +41,25 @@ class GoParser(Parser):
             with open(file_path, 'r') as file:
                 content = file.read()
 
-            require_lines = re.finditer(r'require\s+([^\s]+)\s+([^\s]+)', content)
+            require_lines = re.finditer(r'require\s+(?!\()([^\s]+)\s+([^\s]+)', content)
             for match in require_lines:
                 package = match.group(1)
                 version = match.group(2)
                 dependencies.append(('Go', package, version))
 
-            require_block = re.search(r'require\s+\((.*?)\)', content, re.DOTALL)
-            if require_block:
-                block_content = require_block.group(1)
+            require_blocks = re.finditer(r'require\s+\(([^(]*?)\)', content, re.DOTALL)
+            for block in require_blocks:
+                block_content = block.group(1)
+
                 for line in block_content.strip().split('\n'):
                     line = line.strip()
                     if not line or line.startswith('//'):
                         continue
 
                     parts = line.split()
+                    if "indirect" in parts and self.only_direct:
+                        continue
+
                     if len(parts) >= 2:
                         package = parts[0]
                         version = parts[1]
@@ -78,10 +84,11 @@ class GoParser(Parser):
                     parts = line.split()
                     if len(parts) >= 2:
                         package = parts[0]
-                        if package.endswith('/go.mod'):
-                            package = package[:-7]
-
                         version = parts[1]
+
+                        if version.endswith('/go.mod'):
+                            continue
+                            # package = package[:-7]
 
                         package_version = (package, version)
                         if package_version not in seen_packages:

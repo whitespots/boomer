@@ -1,0 +1,25 @@
+{
+  "groupId": "org.example",
+  "artifactId": "maven-lock-fixture",
+  "version": "1.0.0",
+  "lockFileVersion": 1,
+  "dependencies": [
+    {
+      "groupId": "org.example",
+      "artifactId": "direct-lib",
+      "version": "1.0.0",
+      "selectedVersion": "1.2.0",
+      "included": true,
+      "children": [
+        {
+          "groupId": "org.example",
+          "artifactId": "transitive-lib",
+          "version": "2.0.0",
+          "selectedVersion": "2.1.0",
+          "included": true,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
